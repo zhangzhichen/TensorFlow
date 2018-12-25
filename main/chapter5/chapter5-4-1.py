@@ -11,4 +11,4 @@ saver = tf.train.Saver()
 
 with tf.Session() as sess:
     sess.run(init_op)
-    saver.save(sess,"D:\saver\chapter5\model.ckpt")
+    saver.save(sess)
