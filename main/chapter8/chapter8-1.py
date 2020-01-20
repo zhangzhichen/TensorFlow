@@ -16,6 +16,7 @@ for i in range(len(X)):
     state = np.tanh(before_activation)
     #根据当前时刻状态计算最终输出。
     final_output = np.dot(state,w_output)+b_output
+    
 
     #输出每个时刻的信息。
     print("before activation: ",before_activation)
