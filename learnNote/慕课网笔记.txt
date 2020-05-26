@@ -1,0 +1,82 @@
+1.抽象类（abstract class）和接口（interface）有什么异同:
+相同点：
+（1）不能直接实例化。如果要实例化，抽象类变量必须实现所有抽象方法，接口变量必须实现所有接口未实现的方法。
+
+（2）都可以有实现方法（Java8 以前的接口不能有实现方法）。
+
+（3）都可以不需要实现类或者继承者去实现所有方法（Java8 以前的接口，Java8 及以后的接口中可以包括默认方法，不需要实现者实现）。
+
+不同点：
+
+（1）抽象类和接口所反映出的设计理念不同。抽象类表示的是对象 / 类的抽象，接口表示的是对行为的抽象。
+
+（2）抽象类不可以多重继承，接口可以多重继承。即一个类只能继续一个抽象类，却可以继承多个接口。
+
+（3）访问修饰符 ——
+
+抽象类中的方法可以用 public protected 和 default abstract 修饰符，不能用 private、static、synchronize、native 修饰；变量可以在子类中重新定义，也可以重新赋值；
+接口的方法默认修饰符是 public abstract， Java8 开始出现静态方法，多加 static 关键字；变量默认是 public static final 型，且必须给其初值，在实现类中也不能重新定义，也不能改变其值。
+（4）抽象类可以有构造器，接口没有构造器。
+
+2.jdk动态代理和cglib动态代理
+jdk动态代理   (代理类与委托类实现同一接口，主要是通过代理类实现InvocationHandler并重写invoke方法来进行动态代理的，在invoke方法中将对方法进行增强处理)
+（1）定义一个接口，该接口里有需要实现的方法，并且编写实际的实现类。
+（2）定义一个实现InvocationHandler接口的代理类，重写invoke()方法，且添加getProxy()方法。（参见代码）
+cglibf动态代理  (代理类将委托类作为自己的父类并为其中的非final委托方法创建两个方法，一个是与委托方法签名相同的方法，它在方法中会通过super调用委托方法；另一个是代理类独有的方法。在代理方法中，它会判断是否存在实现了MethodInterceptor接口的对象，若存在则将调用intercept方法对委托方法进行代理)
+（1）定义一个实现类。
+
+3.为什么cglib可以动态代理不实现接口的类？
+
+
+4.hashMap
+不同的 JDK 版本版本的存储过程略有差异。在 JDK1.8 中，HashMap 存储数据的过程可以分为以下几步：
+
+1. 对 key 的 hashCode () 进行 hash 后计算数组获得下标 index;
+
+2. 如果当前数组为 null，进行容量的初始化，初始容量为 16；
+
+3. 如果 hash 计算后没有碰撞，直接放到对应数组下标里；
+
+4. 如果 hash 计算后发生碰撞且节点已存在，则替换掉原来的对象；
+
+5. 如果 hash 计算后发生碰撞且节点已经是树结构，则挂载到树上。
+
+6 / 如果 hash 计算后发生碰撞且节点是链表结构，则添加到链表尾，并判断链表是否需要转换成树结构（默认大于 8 的情况会转换成树结构）；
+
+7. 完成 put 后，是否需要 resize () 操作（数据量超过 threshold，threshold 为初始容量和负载因子之积，默认为 12）。
+
+而在 1.7 的版本中，5/6 是合在一起的，即如果发生哈希碰撞且节点是链表结构，则放在链表头。
+
+
+5.HashMap 和 HashTable 有什么区别？
+（1）HashMap 是线程不安全的，HashTable 是线程安全的。
+（2）HashMap 的键需要重新计算对象的 hash 值，而 HashTable 直接使用对象的 hashCode。
+（3）HashMap 的值和键都可以为 null，HashTable 的值和键都不能为 null。
+（4）HashMap 的数组的默认初始化大小为 16，HashTable 为 11；HashMap 扩容时会扩大两倍，HashTable 扩大两倍 + 1；
+
+通过分析 JDK 源代码研究 Hash 存储机制
+https://www.ibm.com/developerworks/cn/java/j-lo-hash/index.html
+由阿里巴巴Java开发规约HashMap条目引发的故事
+https://yq.aliyun.com/articles/225660?spm=5176.10695662.1996646101.searchclickresult.12ba15f2bZ8eoS
+Java提高篇（二七）-----TreeMap
+https://blog.csdn.net/chenssy/article/details/26668941
+旧金山大学的 HashMap 演示动画
+https://www.cs.usfca.edu/~galles/visualization/OpenHash.html?spm=a2c4e.10696291.0.0.750619a4jsOrBg
+扩展面试题目_Map 类面试题
+https://github.com/jiehao2019/imooc_java_interview_questions/blob/master/Java%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF/Map%E7%B1%BB%E9%9D%A2%E8%AF%95%E9%A2%98.md
+
+
+6.ArrayList 和 LinkedList 的的相同点和不同点分别是什么？
+相同点：ArrayList 和 LinkedList 都是 List 接口的实现类，因此都具有 List 的特点，即存取有序，可重复；而且都不是线程安全的。
+不同点：ArrayList 基于数组实现，LinkedList 基于双向链表实现。
+1).“都是 List 接口的实现类”，体现侯选人对 JDK 源码是比较熟悉的；
+2).“因此都具有 List 的特点，即存取有序，可重复”，是在 1 的基础上对 List 的具体阐述；
+3).“都不是线程安全的”，体现的是线程安全方面的考虑。
+
+
+7.Java 集合的快速失败（fail-fast）和安全失败（fail-safe）的差别是什么？
+快速失败和安全失败都是 java 集合（Collection）的一种错误机制。单线程情况下，遍历集合时去执行增删等改变集合结构的操作；或者多线程情况下，一个线程遍历集合，另一个线程执行增删等改变集合结构的操作。
+快速失败，是指失败 / 异常时立即报错，通常会抛出 ConcurrentModificationException 异常，像 java.util 包下面的集合类就是使用这种机制；
+安全失败，是指失败 / 异常时直接忽略，java.util.concurrent 包下面的集合类都是使用这种机制。
+
+(目前快速失败 / 安全失败已经不仅限于 JDK 里面的集合操作了，而是作为一种思想在 Java 很多地方都有用到，比如说 RPC 调用框架的不同策略、Web 容器启动等。广义地讲，快速失败是指代码逻辑在碰到潜在问题的时候，尽快返回错误而不是尝试容忍或者解决问题；而安全失败则是采用兜底逻辑来忽略此问题，以便流程可以继续推进。)

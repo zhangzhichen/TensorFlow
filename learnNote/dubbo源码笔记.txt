@@ -1,0 +1,85 @@
+1.dubbo注册中心解读。 详见:https://segmentfault.com/a/1190000016905715
+
+1）RegistryService（最底层接口）提供方法:register(注册),unregister(取消注册),subscribe(订阅)，unsubscribe（取消订阅）,lookup(查询注册表)这五个父类方法。
+
+2）RegistryFactory注册中心的工厂接口，用来返回注册中心的对象。该接口上有个@SPI注解，并且默认值为dubbo，也就是默认扩展的是DubboRegistryFactory，并且可以在getRegistry方法上可以看到有@Adaptive注解，那么该接口会动态生成一个适配器RegistryFactory$Adaptive，并且会去首先扩展url.protocol的值对应的实现类
+
+3）NotifyListener 只有一个notify方法，通知监听器。当收到服务变更通知时触发。
+
+4）AbstractRegistry AbstractRegistry实现的是Registry接口，是Registry的抽象类。为了减轻注册中心的压力，在该类中实现了把本地URL缓存到property文件中的机制，并且实现了注册中心的注册、订阅等方法。 源码注释地址:https://github.com/CrazyHZM/dubbo/blob/analyze-2.6.x/dubbo-registry/dubbo-registry-api/src/main/java/com/alibaba/dubbo/registry/support/AbstractRegistry.java
+构造方法AbstractRegistry 包括加载文件里的properties
+doSaveProperties 该方法主要是将内存缓存properties中的数据存储到文件中，并且在里面做了版本号的控制，防止老的版本数据覆盖了新版本数据。
+getCacheUrls 从properties缓存中获取相关value
+recover 恢复方法，在注册中心断开，重连成功的时候，会恢复注册和订阅。
+notify  订阅,notify方法是通知监听器，url的变化结果，不过变化的是全量数据，全量数据意思就是是以服务接口和数据类型为维度全量通知，即不会通知一个服务的同类型的部分数据，用户不需要对比上一次通知结果。
+saveProperties 该方法是单个消费者url对应在notified中的数据，保存在到文件，而保存到文件的操作是调用了doSaveProperties方法，该方法跟doSaveProperties的区别是doSaveProperties方法将properties数据全部覆盖性的保存到文件，而saveProperties只是保存单个消费者url的数据。
+
+support包下的类:
+1）FailbackRegistry 构造方法:FailbackRegistry   
+revocer（恢复方法）将注册和订阅放入到对应的失败缓存中，然后定时重试。	
+retry该方法中实现了重试的逻辑，分别对注册失败failedRegistered、取消注册失败failedUnregistered、订阅失败failedSubscribed、取消订阅失败failedUnsubscribed、通知监听器失败failedNotified这五个缓存中的元素进行重试，重试的逻辑就是调用了相关的方法，然后从缓存中删除，例如重试注册，先进行doRegister，然后把该url从failedRegistered移除。
+
+2）AbstractRegistryFactory 该类实现了RegistryFactory接口，抽象了createRegistry方法，它实现了Registry的容器管理。
+distoryAll:该方法作用是销毁所有的Registry对象，并且清除内存缓存
+
+3）ConsumerInvokerWrapper && ProviderInvokerWrapper 这两个类实现了Invoker接口，分别是服务消费者和服务提供者的Invoker的包装器 （我下载的版本中并未找到）
+
+4）RegistryStatusChecker 状态校验接口,实现StatusChecker
+
+
+ActivateComparator:该类在ExtensionLoader类的getActivateExtension方法中被运用到，作为自动激活拓展对象的排序器。
+
+2.dubbo默认注册中心
+
+1）DubboRegistry 该类继承了FailbackRegistry类，该类里面封装了一个重连机制
+	关于等待时间优先从url配置中取得，如果没有这个值，再设置为默认值3s。
+	创建了一个重连计时器，一定的间隔时间去检查是否断开，如果断开就进行连接。
+	
+2）DubboRegistryFactory 该类继承了AbstractRegistryFactory类，实现了AbstractRegistryFactory抽象出来的createRegistry方法，是dubbo这种实现的注册中心的工厂类，里面做了一些初始化的处理，以及创建注册中心DubboRegistry的对象实例。
+
+3）MulticastRegistry 该类继承了FailbackRegistry类，该类就是针对注册中心核心的功能注册、订阅、取消注册、取消订阅，查询注册列表进行展开，利用广播的方式去实现。
+checkMulticastAddress方法，校验IPv4地址
+receive方法 根据接收到的消息开头的数据来判断需要做什么类型的操作，重点在于订阅，可以选择单播订阅还是广播订阅，这个取决于url携带的配置是什么。
+broadcast方法 
+lookup方法 该方法是返回注册的服务url列表，可以看到有很多种获得的方法这些缓存都保存在AbstractRegistry类中
+
+3.redis注册中心
+Redis是一个key-value存储系统，交换数据非常快，redis以内存作为数据存储的介质，所以读写数据的效率极高，远远超过数据库。redis支持丰富的数据类型，dubbo就利用了redis的value支持map的数据类型。redis的key为服务名称和服务的类型。map中的key为URL地址，map中的value为过期时间，用于判断脏数据，脏数据由监控中心删除。
+dubbo利用JRedis来连接到Redis分布式哈希键-值数据库，因为Jedis实例不是线程安全的,所以不可以多个线程共用一个Jedis实例，但是创建太多的实现也不好因为这意味着会建立很多sokcet连接。 所以dubbo又用了JedisPool，JedisPool是一个线程安全的网络连接池。可以用JedisPool创建一些可靠Jedis实例，可以从池中获取Jedis实例，使用完后再把Jedis实例还回JedisPool。这种方式可以避免创建大量socket连接并且会实现高效的性能。
+1）RedisRegistry 该类继承了FailbackRegistry类，该类就是针对注册中心核心的功能注册、订阅、取消注册、取消订阅，查询注册列表进行展开，基于redis来实现。
+构造函数:构造方法首先是调用了父类的构造函数，然后是对对象池的一些配置进行了初始化，具体的我已经在注释中写明。在构造方法中还做了连接池的创建、过期机制执行器的创建，其中过期会进行延长到期时间的操作具体是在deferExpired方法中实现。还有一个关注点事该执行器的时间是取周期的一半。
+
+deferExpired() 延长过期时间,该方法实现了延长到期时间的逻辑，遍历了已经注册的服务url，这里会有一个是否为非动态管理模式的判断，也就是判断该节点是否为动态节点，只有动态节点是需要延长过期时间，因为动态节点需要人工删除节点。延长过期时间就是重新注册一次。而其他的节点则会被监控中心清除，也就是调用了clean方法。
+
+clean() 方法 该方法就是用来清理过期数据的，之前我提到过dubbo在redis存储数据的数据结构形式，就是redis的key为服务名称和服务的类型。map中的key为URL地址，map中的value为过期时间，用于判断脏数据，脏数据由监控中心删除，那么判断过期就是通过map中的value来判别。逻辑就是在redis中先把记录删除，然后在取消订阅。
+
+isAvailable()方法 该方法是判断注册中心是否可用，通过redis是否连接来判断，只要有一台redis可连接，就算注册中心可用。
+
+2）ZookeeperRegistry 该类继承了FailbackRegistry类，该类就是针对注册中心核心的功能注册、订阅、取消注册、取消订阅，查询注册列表进行展开，基于zookeeper来实现。
+appendDefaultPort() 方法，该方法是拼接使用默认的zookeeper端口，就是方地址本身没有端口的时候才使用默认端口。
+isAvailable() 方法 destroy() 方法 这里两个方法分别是检测zookeeper是否连接以及销毁连接，很简单，都是调用了zookeeper客户端封装好的方法。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

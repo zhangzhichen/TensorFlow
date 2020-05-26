@@ -1,0 +1,18 @@
+https://segmentfault.com/a/1190000017372067
+https://www.jianshu.com/p/279baac48960
+
+1.ReentrantLock标识重入锁，线程获取锁之后，再次获取该锁不需要阻塞。而是直接关联一次计数器增加重入次数。
+2.ReentrantReadWriteLock 读写重入锁.该类维护了两个锁，一个readLock，一个writeLock，适合读多写少的情况解决线程安全问题。原则:读和读不互斥，读和写互斥，写和写互斥。
+3.StampedLock：stampedLock是JDK8引入的新的锁机制，可以简单认为是读写锁的一个改进版本，读写锁虽然通过分离读和写的功能使得读和读之间可以完全并发，但是读和写是有冲突的，如果大量的读线程存在，可能会引起写线程的饥饿。stampedLock是一种乐观的读策略，使得乐观锁完全不会阻塞写线程。
+
+4.非公平锁:
+final void lock() {
+    if (compareAndSetState(0, 1)) //通过cas操作来修改state状态，表示争抢锁的操作
+      setExclusiveOwnerThread(Thread.currentThread());//设置当前获得锁状态的线程
+    else
+      acquire(1); //尝试去获取锁
+}
+
+由于这里是非公平锁，所以调用lock方法时，先去通过cas去抢占锁
+如果抢占锁成功，保存获得锁成功的当前线程
+抢占锁失败，调用acquire来走锁竞争逻辑

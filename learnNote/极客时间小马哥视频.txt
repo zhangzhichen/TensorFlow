@@ -1,0 +1,36 @@
+1.spring-core模块：负责资源管理（Resourse类）,泛型处理
+2.spring-beans模块:负责依赖注入,依赖查找
+3.spring-context模块:事件驱动，注解驱动，模块驱动等
+4.spring-aop:动态代理，aop字节码提升等
+5.spring-expression:表达式语言处理
+
+IOC容器职责:
+1.依赖处理：
+1）依赖查找
+2）依赖注入
+
+2.生命周期管理:
+1）容器的生命周期
+2）托管的资源的生命周期
+
+3.配置:
+1）容器
+2）外部化配置
+3）托管的资源
+
+开源框架:
+1.Apache Avalon
+2.PicoContainer
+3.Google Guice
+
+IOC的实现:
+1.javaBeans是IOC容器
+2.servlet容器也是IOC的实现
+
+依赖查找和依赖注入的区别:
+1.依赖查找是主动或者手动的依赖查找方式。需要依赖容器或标准api实现。
+2.依赖注入通常是手动或自动，无需依赖特定的容器和api。
+
+
+autowiring
+优点：
