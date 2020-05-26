@@ -1,0 +1,86 @@
+1、 springcloud spingmvc与springboot区别，以及实际启动过程，微服务架构中的熔断机制
+2、 jvm的了解（很重要），调优
+3、 aop的了解，主要是底层实现机制
+4、 内置tomcat配置
+5、 数据库优化，mysql主从复制，索引结构
+6、 session共享rabbitmq 并发配置 
+7、 动态代理
+8、 final hashmap
+
+java类加载过程。
+eureka和其它分布式服务区别
+红黑树特点
+线程池的配置
+jdk动态代理和cglib区别
+redis基本类型使用场景
+springCloud有哪些功能,组件
+hibernate连接数据库过程
+
+
+1.springmvc是spring的一个mvc框架，是一个前端视图和后端控制为一体的框架。
+	springboot整合了好多框架的框架，思想是约定大于配置，用于进行微服务独立开发，开发非常方便快捷。
+	springcloud是一套分布式服务治理的框架，本身不会提供功能性内容，专注于服务之间的通讯、熔断、监控等。
+2.常用配置，端口，最大线程数，最小线程数，队列长度。
+  直接用类来配置：重写TomcatEmbeddedServletContainerFactory  重写servletContainer方法
+
+3.aop，是oop的一种扩展，面向切面编程。defaultAopProxyFactory.createAopProxy
+  为什么动态代理只能是接口。因为已经实现了Proxy，不能多继承。
+  
+4.动态代理：大概流程
+1、为接口创建代理类的字节码文件
+2、使用ClassLoader将字节码文件加载到JVM
+3、创建代理类实例对象，执行对象的目标方法
+
+5.sql优化:
+  使用连接（JOIN）来代替子查询(Sub-Queries)
+  使用索引
+  选取最适用的字段属性,字段属性和大小控制
+  
+  主从优点:优点主要有
+	1，可以作为备用数据库进行操作，当主数据库出现故障之后，从数据库可以替代主数据库继续工作，不影响业务流程
+
+	2，读写分离，将读和写应用在不同的数据库与服务器上。一般读写的数据库环境配置为，一个写入的数据库，一个或多个读的数据库，各个数据库分别位于不同的服务器上，充分利用服务器性能和数据库性能；当然，其中会涉及到如何保证读写数据库的数据一致，这个就可以利用主从复制技术来完成。
+
+	3，吞吐量较大，业务的查询较多，并发与负载较大。
+  
+  主从复制:
+	主库db的更新事件(update、insert、delete)被写到binlog
+	主库创建一个binlog dump thread，把binlog的内容发送到从库
+	从库启动并发起连接，连接到主库
+	从库启动之后，创建一个I/O线程，读取主库传过来的binlog内容并写入到relay log
+	从库启动之后，创建一个SQL线程，从relay log里面读取内容，从Exec_Master_Log_Pos位置开始执行读取到的更新事件，将更新内容写入到slave的db
+  
+  B+树:B+树的特点有：
+	非叶子节点的子树指针与关键字的个数相同
+	所有叶子节点连接成为一个单链表，且这个链表是有序的
+	所有关键字都在叶子节点出现，因此不可能在非叶子节点命中
+	内节点不存数据，只存key
+	非叶子节点相当于是叶子节点的索引，叶子节点相当于是存储数据的数据层
+	适合文件索引系统（）
+	
+6.session共享:
+	redis实现
+
+7.rabbitmq多线程:
+
+	1.在RabbitmqConfig.java中添加容器工厂配置：
+	@Bean("customContainerFactory")    
+	public SimpleRabbitListenerContainerFactory containerFactory(SimpleRabbitListenerContainerFactoryConfigurer configurer, ConnectionFactory 	connectionFactory) {
+		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+		factory.setConcurrentConsumers(10);  //设置线程数        
+		factory.setMaxConcurrentConsumers(10); //最大线程数        
+		configurer.configure(factory, connectionFactory);        
+		return factory;    
+	}
+	2.在@RabbitListener注解中指定容器工厂
+	@RabbitListener(queues = {"监听队列名"},containerFactory = "customContainerFactory")
+	
+
+	 解耦：在项目启动之初是很难预测未来会遇到什么困难的，消息中间件在处理过程中插入了一个隐含的，基于数据的接口层，两边都实现这个接口，这样就允许独立的修改或者扩展两边的处理过程，只要两边遵守相同的接口约束即可。
+	 冗余（存储）：在某些情况下处理数据的过程中会失败，消息中间件允许把数据持久化知道他们完全被处理
+	 扩展性：消息中间件解耦了应用的过程，所以提供消息入队和处理的效率是很容易的，只需要增加处理流程就可以了。
+	 削峰：在访问量剧增的情况下，但是应用仍然需要发挥作用，但是这样的突发流量并不常见。而使用消息中间件采用队列的形式可以减少突发访问压力，不会因为突发的超时负荷要求而崩溃
+	 可恢复性：当系统一部分组件失效时，不会影响到整个系统。消息中间件降低了进程间的耦合性，当一个处理消息的进程挂掉后，加入消息中间件的消息仍然可以在系统恢复后重新处理
+	 顺序保证：在大多数场景下，处理数据的顺序也很重要，大部分消息中间件支持一定的顺序性
+	 缓冲：消息中间件通过一个缓冲层来帮助任务最高效率的执行
+	 异步通信：
