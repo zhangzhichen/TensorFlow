@@ -1,0 +1,54 @@
+寿险笔试范围：
+1.类实现singleton设计模式
+2.Java代码生成菜单树
+3.DDL命令
+4.读代码写执行结果
+5.根据要求写1SQL查询
+6.oracle的优化方案和优化后sql语句
+7.秒杀活动技术方案设计 
+
+1.
+//双重锁
+public class Singleton {
+	//volatile关键字
+    private volatile static Singleton sSingleton;
+
+    private Singleton() {
+    }
+
+    public static Singleton getSingleton() {
+        if (sSingleton == null) {
+            synchronized (Singleton.class) {
+                if (sSingleton == null) {
+                    sSingleton = new Singleton();
+                }
+            }
+        }
+        return sSingleton;
+    }
+}
+//枚举
+public enum SingletonDemo4 {
+    
+    //枚举元素本身就是单例对象
+    INSTANCE;
+    
+    //添加自己需要的操作
+    public void singletonOperation(){
+        
+    }
+}
+
+2.
+public static List<Menu> parseMenuTree(List<Menu> list){	    List<Menu> result = new ArrayList<Menu>();			    // 1、获取第一级节点	    for (Menu menu : list) {	        if(null == menu.getPid()) {		    result.add(menu);		}		    }			    // 2、递归获取子节点	    for (Menu parent : result) {		parent = recursiveTree(parent, list);	    }			    return result;	}		public static Menu recursiveTree(Menu parent, List<Menu> list) {	    for (Menu menu : list) {	        if(Objects.equals(parent.getId(),menu.getPid())) {		    menu = recursiveTree(menu, list);		    parent.getChildren().add(menu);		}	    }		    	    return parent;	}
+
+3.CREATE DATABASE
+CREATE TABLE
+ALTER TABLE
+DROP TABLE
+CREATE VIEW
+ALTER VIEW  view_name as select 
+DROP VIEW
+TRUNCATE TABLE
+
+7.

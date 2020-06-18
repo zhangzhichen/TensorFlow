@@ -42,7 +42,7 @@ def preprocess_for_train(image,new_shape,bbox):
 
     return distorted_image
 
-image_raw_data = tf.gfile.GFile("D:\picture/tiger.jpeg","rb").read()
+image_raw_data = tf.gfile.GFile("D:\picture/cat.jpg","rb").read()
 with tf.Session() as sess:
     img_data = tf.image.decode_jpeg(image_raw_data)
     boxes = tf.constant([[[0.05,0.05,0.9,0.7],[0.35,0.47,0.5,0.56]]])

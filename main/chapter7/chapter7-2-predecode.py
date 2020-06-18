@@ -2,7 +2,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 #读取图像的原始数据
-image_raw_data = tf.gfile.GFile("D:\picture/tiger.jpeg","rb").read()
+image_raw_data = tf.gfile.GFile("D:\picture/cat.jpg","rb").read()
 with tf.Session() as sess:
     img_data = tf.image.decode_jpeg(image_raw_data)
 
@@ -18,5 +18,5 @@ with tf.Session() as sess:
 
     #将数据重新保存，得到和原图形一样的图像
     encoded_image = tf.image.encode_jpeg(img_data)
-    with tf.gfile.GFile("D:\output//tiger.jpg","wb") as f:
+    with tf.gfile.GFile("D:\output//cat.jpg","wb") as f:
         f.write(encoded_image.eval())

@@ -1,0 +1,50 @@
+1.服务
+2.队列
+3.发布订阅的方式。
+
+1.解耦
+2.流量削峰
+3.异步通信
+
+rabbitMQ特性:
+1.高可靠
+2.灵活的路由
+3.支持多客户端（多语言）
+4.集群和扩展性
+5.高可用队列
+6.权限管理
+7.插件系统
+8.可靠性
+9.与spring集成
+
+
+需要安装一个客户端才能使用rabbitMQ，服务叫broker（中介）
+
+binding key 绑定键
+# 0个或多个单词
+* 不多不少1个单词
+
+死信交换机（dead letter exchange）
+死信队列(dead letter queue)
+
+死信条件:
+1.消费者拒绝
+2.消息过期
+3.队列达到最大长度
+
+延迟队列:
+1.利用超时时间将消息进入死信队列，再进行发送。
+2.delayed-message-exchange 延迟队列  
+
+延迟队列比死信队列的好处：
+1.死信队列的延迟队列数量需要有很多（比如5分钟，10分钟）
+2.死信队列会占用比较多的内存开销。
+
+rabbitMQ消息可靠性投递
+1.生产者放消息给broker，
+1）transaction模式。channel.txSelect();提交事务:channel.txCommit();说明成功 channel.txRollBack()。但是会大量占用资源，通信浪费。
+2）confirm模式。 channel.confirmSelect()   channel.waitForConfirmOrDie() 可以批量确认。
+3）addConfirmListener 异步确认模式。
+2.交换机路由给队列，是否正确。
+3.队列没有人消费，
+4.队列投递给消费者，什么时候才能删除队列顶部的数据

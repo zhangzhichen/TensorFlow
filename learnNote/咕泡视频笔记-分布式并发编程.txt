@@ -1,0 +1,121 @@
+concurrentHashMap:
+1.初始化tab
+1).-1表示一个占位符，如果sizeCtrl=-1,表示当前已经有线程抢到了初始化的权限
+2).>0的数字sizeCtrl=sc*0.75 表示下一次扩容的大小
+3).负数(非-1) 代表有几个线程正在扩容 (-2)--表示有一个线程正在扩容
+
+numberOfLeadingZeros  --返回最高位非0位的前面零的个数   16-10000  -->32-5 = 27
+
+1.需要保证每次扩容的扩容戳唯一
+2.可以支持并发扩容
+
+总结:
+1.采用数组的形式实现并发增加元素的个数。
+2.并发扩容，通过多个线程实现数据的迁移。
+3.采用高低链的方式来解决多次hash计算的问题，提升效率。
+4.sizeCtrl的设计，三种状态
+5.resizeStamp 高低位设计实现唯一性以及多个线程协助扩容。
+
+
+blockingQueue:
+1.启动两个线程，实现生产者消费者模式。
+2.可以实现多个线程之间消息同步。
+
+ArrayBlockingQueue,LinkedBlockingQueue
+
+线程池:
+1.复用已有的资源。
+2.控制资源总数。
+
+优势:
+1.控制线程的数量。
+2.降低频繁创建和销毁线程。
+3.对于任务响应速度更快。
+
+java中提供的线程池:
+1.Executors.newFixedThreadPool()
+2.Executors.newSingleThreadExecutor()
+3.Executors.newSchediledThreadPool()
+4.Executors.newForkJoinThreadPool()
+5.Executors.newCachedThreadPool()
+
+ThreadPoolExecutor(int corePoolSize,  //核心线程数   --不能随意销毁
+				  int maximumPoolSize,//最大线程数
+				  long keepAliveTime,//超时时间
+				  TimeUnit unit, //超过时间的单位
+				  BlockingQueue<Runnable> workQueue,//阻塞队列
+				  ThreadFactory threadFactory,//线程工厂
+				  RejectedExecutionHandler handler//拒绝策略
+				  
+
+线程execute方法：
+1.ctl:32bit
+高三位代表当前的线程池状态，低29位表示线程的数量
+流程:线程池重的工作线程数是否已经超过核心线程:
+如果没有，创建一个worker线程（thread.start()）。自循环runWorker()				  
+如果超过了，添加到阻塞队列
+
+addWorker方法:
+1.添加工作线程。
+2.启动工作线程。
+
+自己实现AQS:
+state = -1 初始状态
+state = 0 释放锁的状态
+state = 1 获得锁的状态
+				  
+				  
+
+线程池数量设置:
+1.CPU的核心数
+线程执行情况:->io密集型(cpu时间片的切换，开多个线程提高效率)。 设置最大线程数为CPU核心数的两倍
+（可以通过压测测试应该设置的值）->公式为:(线程等到时间+线程CPU时间)/线程CPU时间*cpu核心数
+cpu密集型（cpu利用率非常高,开多个线程降低效率）  设置最大线程数为CPU核心数+1
+
+
+可以重写线程池ThreadPoolExxecutor
+重写beforeExecute等方法
+
+submit方法和execute方法的区别:
+1.submit带返回值。
+2.submit可以执行实现runnable和callable的方法，execute只能执行实现runnable的方法。
+3.submit不会抛出异常。
+
+
+负载均衡算法:
+1.轮询。
+2.加权轮询。
+3.随机算法。
+4.最小连接数。
+5.hash算法。
+
+通信:
+OSI七层网络模型：(应用层，表示层，会话层)，传输层，网络层，(数据链路层，物理层)。
+四层网络：  			应用层		       传输层，网络层    	网络接口层
+
+举例：
+www.baidu.com: 发送请求:
+1.(传输层)TCP头，http请求报文
+2.(网络层)IP头,TCP头，http请求报文
+3.(网络接口层)MAC地址，IP头,TCP头，http请求报文 
+接收请求：和接受层顺序相反。
+
+负载均衡:
+1.二层负载->mac地址,vip(虚拟ip)每个机器的MAC地址不一样，IP地址相同
+2.三层负载->IP 对外提供VIP，集群中的每个机器采用不同的ip地址
+3.四层负载->传输层的负载，包含IP和端口.修改ip地址或者端口地址实现负载
+4.七层负载->应用层负载,请求的URL,http请求的报文来进行负载。 
+
+TCP/IP协议:
+1.建立连接的机制
+2.三次握手建立连接
+3.客户端再次确认
+
+客户端主动打开连接，发送SYN=1的请求到服务器，服务器接收到请求，发送SYN=1,ACK=1，seq=y,ack=x+1给客户端，客户端接收到，再次发送给服务端：ACK=1,seq=x+1,ack=y+1 然后开始数据传输
+
+SYN攻击:伪造大量请求第一次握手，占用服务器大量连接。
+
+四次挥手:客户端主动关闭，FIN=1,seq=u,服务器发送ACK=1,seq=v,ack=u+1(此时客户端处于等到状态，因为服务端可能还没处理完当前数据)，服务器再次发送FIN=1,ACK=1,seq=w,ack=u+1,客户端回复ACK=1,seq=u+1,ack=w+1(客户端等待2ms关闭，服务端关闭)
+
+长连接-?发送心跳包维持连接（因为建立连接需要三次握手，耗资源）
+
