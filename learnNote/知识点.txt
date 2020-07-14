@@ -51,4 +51,5 @@ ALTER VIEW  view_name as select
 DROP VIEW
 TRUNCATE TABLE
 
-7.
+
+bean的生命周期

@@ -1,0 +1,58 @@
+javac 将java文件编译成class文件。
+u4:cafebabe  文件类型
+
+类加载机制:
+1.装载
+1）先找到类文件所在的位置，磁盘全路径   ---->类装载器ClassLoader--->寻找类
+不同的装载器装载不同路径下的类:
+a.bootstarpClassLoader:装载rt.jar底下的类
+b.extension ClassLoader:装载java平台重扩展功能的jar包，包括jre/lib/*.jar
+c.App ClassLoader:加载classPath中指定的jar包以及Djava.class.path所指定目录下的类和jar包
+d.Custom ClassLoader:通过java.lang.ClassLoader的子类自定义加载class，属于应用程序根据自身需要自定义的ClassLoader,如tomcat,jboss都会根据j2ee规范自行实现ClassLoader
+2）类文件信息交给JVM	-->类文件字节码流静态存储结构--->JVM里面的某一块区域(method area)
+3）类文件所对应对象class交给JVM   --->堆	heap
+2.链接
+1）验证-->保证被加载的类的正确性。
+2）准备-->要为类的静态变量分配内存空间，并将其的值初始化成默认值。  比如static int a=10;默认初始化成0
+3）解析-->将类中的符号引用转换为直接引用:符号引用->十六进制符号。  直接引用->jvm中对应的内存地址
+3.初始化
+为静态变量进行真正的初始化。 a=10
+
+类装载机制：
+如果两个装载器都装载同一个，不能同时装载。
+因此:双亲委派机制:流程是->子装载器装载类的时候，先找父装载器。如果装载好了，就不装载了。
+
+如何破坏双亲委派:
+1.classLoador复写
+
+jdk1.7---->permSpace 永久代
+jdk1.8---->metaSpace 元空间
+
+栈帧:
+1.局部变量表
+2.操作数栈
+3.动态链接
+4.方法返回地址
+
+java内存模型:
+1.old区（年龄超过15岁，或者young区存不下了）
+2.young区分为三个部分。
+eden区，survivor0，survivor1-->8:1:1
+
+什么样的对象是垃圾:
+1.引用分析-->存在循环引用。
+2.可达性分析-->
+类加载器作为GCRoot。如果它找到一条线路，能够到达某个对象。不能称为垃圾
+线程作为GCRoot
+
+回收算法：
+1.标记
+2.清除
+问题：
+a.空间碎片。内存不连续
+b.标记和清除比较耗时，效率比较低
+
+新生代:赋值算法--->适用于少量对象存活的场景
+老年代:标记，清除/整理
+
+CMS:current mark sweep 并发类垃圾收集器  -->比较关注的是停顿时间

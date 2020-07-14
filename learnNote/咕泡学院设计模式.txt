@@ -1,0 +1,4 @@
+spring IOC 单例模式
+spring AOP 代理模式
+spring MVC 委派模式，适配器模式
+spring jdbc 模板模式

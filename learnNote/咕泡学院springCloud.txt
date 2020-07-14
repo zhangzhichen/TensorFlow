@@ -1,0 +1,27 @@
+spring cloud feign:
+openfeign：一种框架
+利用feign的高扩展性，使用标准的spring Web MVC 来申明客户端java接口
+1.注解扩展性-->feign
+2.HTTP请求处理
+3.REST请求元信息解析
+3.提供spring Web MVC注解处理
+4.提供feign自动装配
+
+spring Cloud Open Feign是通过java捷尔克的方式来声明REST服务提供者的请求元信息，通过调用ava接口的方式来实现HTTP/REST通讯
+
+
+RPC:
+rpc是一种请求-响应协议。一次RPC在客户端初始化，再由客户端讲请求信息传递到远程的服务器端，执行指定的带有参数的过程。经过远程服 务器执行过程后，将结果作为响应内容返回到客户端。
+
+Bean注入过程
+1.编码BeanDefintion生成
+2.XML配置
+3.注解标注
+4.直接注册
+5.factoryBean生成的
+
+factoryBean是如何当作一个bean被注入
+通过名称查找:getBean(String)
+getBean(String,Class)
+getBean(Class)
+通过注解查找：getBeansWithAnnotation(Annotation)
