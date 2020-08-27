@@ -25,3 +25,40 @@ factoryBean是如何当作一个bean被注入
 getBean(String,Class)
 getBean(Class)
 通过注解查找：getBeansWithAnnotation(Annotation)
+
+
+网关:
+1.核心技术:反向代理
+  层次:四层，七层
+  核心 
+    web服务发现（服务提供方）
+	http/tcp请求转发
+  应用
+    授权，认证
+	URL重定向
+
+java网关:
+servlet gateway
+servlet相当于 Java CGI(Common Gateway Interface)
+Servlet 基于线程(linux内核小于2.6没有线程的概念)
+CGI基于进程
+-->JSP动态servlet，运行时编译，达到字节码变化的效果
+
+Netflix Zuul
+基于Servlet API
+  基于Servlet
+  基于Filter
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
